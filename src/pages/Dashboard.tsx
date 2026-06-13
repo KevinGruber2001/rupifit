@@ -17,7 +17,7 @@ export default function Dashboard() {
   if (loadingParticipants || loadingEntries) return <p>Loading...</p>
 
   return (
-    <div>
+    <div className="pb-16">
       <header>
         <h1>RupiFit</h1>
         <button onClick={() => supabase.auth.signOut()}>Sign out</button>

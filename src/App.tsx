@@ -1,13 +1,36 @@
-import { useSession } from './hooks/useSession'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router'
+import ProtectedRoute from './components/ProtectedRoute'
+import BottomNav from './components/BottomNav'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import Record from './pages/Record'
+import BeReal from './pages/BeReal'
+import Search from './pages/Search'
+import Profile from './pages/Profile'
 
 function App() {
-  const { session, loading } = useSession()
-
-  if (loading) return <p>Loading...</p>
-
-  return session ? <Dashboard /> : <Login />
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={
+            <>
+              <Outlet />
+              <BottomNav />
+            </>
+          }>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/record" element={<Record />} />
+            <Route path="/bereal" element={<BeReal />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
 export default App
