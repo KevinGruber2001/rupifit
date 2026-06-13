@@ -6,7 +6,7 @@ const STATUS_COLORS: Record<EntryStatus, string> = {
   done: '#4ade80', // green
   cheat: '#facc15', // yellow
   sick: '#60a5fa', // blue
-  missed: '#f87171', // red
+  missed: '#f87172', // red
 }
 
 interface CalendarGridProps {
