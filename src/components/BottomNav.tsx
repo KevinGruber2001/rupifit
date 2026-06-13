@@ -13,13 +13,13 @@ const rightItems = [
 
 export default function BottomNav() {
   return (
-    <div className="fixed bottom-4 left-4 right-4 flex items-center justify-between bg-gray-900 rounded-2xl px-4 h-16 shadow-2xl">
+    <div className="fixed bottom-4 left-4 right-4 flex items-center justify-between bg-surface border border-border rounded-card px-4 h-16 shadow-lg shadow-foreground/5">
       {navItems.map(({ to, icon: Icon, label }) => (
         <NavLink
           key={to}
           to={to}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-0.5 flex-1 transition-all ${isActive ? 'text-white' : 'text-gray-500'}`
+            `flex flex-col items-center gap-0.5 flex-1 transition-all ${isActive ? 'text-primary' : 'text-muted'}`
           }
         >
           {({ isActive }) => (
@@ -34,9 +34,9 @@ export default function BottomNav() {
       <div className="flex-1 flex items-center justify-center">
         <NavLink
           to="/record"
-          className="w-12 h-12 bg-violet-500 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/40"
+          className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30"
         >
-          <Plus size={24} strokeWidth={2.5} className="text-white" />
+          <Plus size={24} strokeWidth={2.5} className="text-surface" />
         </NavLink>
       </div>
 
@@ -45,7 +45,7 @@ export default function BottomNav() {
           key={to}
           to={to}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-0.5 flex-1 transition-all ${isActive ? 'text-white' : 'text-gray-500'}`
+            `flex flex-col items-center gap-0.5 flex-1 transition-all ${isActive ? 'text-primary' : 'text-muted'}`
           }
         >
           {({ isActive }) => (

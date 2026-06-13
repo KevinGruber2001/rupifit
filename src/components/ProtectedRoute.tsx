@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router'
-import { useSession } from '../hooks/useSession'
+import { useSession } from '../context/SessionContext'
 
 export default function ProtectedRoute() {
   const { session, loading } = useSession()
