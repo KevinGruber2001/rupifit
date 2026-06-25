@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router'
-import { CalendarDays, Camera, Plus, Search, User } from 'lucide-react'
+import { CalendarDays, Camera, LayoutGrid, Plus, User } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', icon: CalendarDays, label: 'Kalender' },
-  { to: '/search', icon: Search, label: 'Search' },
+  { to: '/search', icon: LayoutGrid, label: 'Overview' },
 ]
 
 const rightItems = [
@@ -13,7 +13,7 @@ const rightItems = [
 
 export default function BottomNav() {
   return (
-    <div className="fixed bottom-4 left-4 right-4 flex items-center justify-between bg-surface border border-border rounded-card px-4 h-16 shadow-lg shadow-foreground/5">
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 flex items-center justify-between bg-surface border border-border rounded-card px-4 h-16 shadow-lg shadow-foreground/5">
       {navItems.map(({ to, icon: Icon, label }) => (
         <NavLink
           key={to}

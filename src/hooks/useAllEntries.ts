@@ -2,23 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabaseClient'
 import type { DailyEntry } from '../lib/types'
 
-// month format: 'YYYY-MM'
-export function useEntries(participantId: string | undefined, month: string) {
+export function useAllEntries(month: string) {
   return useQuery({
-    queryKey: ['entries', participantId, month],
-    enabled: !!participantId && !!month,
+    queryKey: ['all-entries', month],
     queryFn: async (): Promise<DailyEntry[]> => {
       const [year, monthNum] = month.split('-').map(Number)
       const lastDay = new Date(year, monthNum, 0).getDate()
-      const start = `${month}-01`
-      const end = `${month}-${String(lastDay).padStart(2, '0')}`
 
       const { data, error } = await supabase
         .from('daily_entries')
         .select('*')
-        .eq('participant_id', participantId)
-        .gte('date', start)
-        .lte('date', end)
+        .gte('date', `${month}-01`)
+        .lte('date', `${month}-${String(lastDay).padStart(2, '0')}`)
         .order('date')
 
       if (error) throw error

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { Camera, ImagePlus, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useSession } from '../context/SessionContext'
@@ -22,6 +23,7 @@ const WORKOUT_CATEGORIES = [
 export default function Record() {
   const { session } = useSession()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -81,6 +83,8 @@ export default function Record() {
         })
       if (insertError) throw insertError
 
+      await queryClient.invalidateQueries({ queryKey: ['entries'] })
+      await queryClient.invalidateQueries({ queryKey: ['all-entries'] })
       navigate('/dashboard')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
