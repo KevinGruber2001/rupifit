@@ -1,0 +1,23 @@
+export default function Themes() {
+  return (
+    <div style={{ padding: "40px 0" }}>
+      <img
+        src="/screen.png"
+        alt="FitLog Log Workout Screen"
+        style={{ width: "100%", maxWidth: "420px", display: "block", margin: "40px auto" }}
+      />
+
+      <img
+        src="/screen1.png"
+        alt="FitLog Calendar Screen"
+        style={{ width: "100%", maxWidth: "420px", display: "block", margin: "40px auto" }}
+      />
+
+      <img
+        src="/screen2.png"
+        alt="FitLog Feed Screen"
+        style={{ width: "100%", maxWidth: "420px", display: "block", margin: "40px auto" }}
+      />
+    </div>
+  );
+}
