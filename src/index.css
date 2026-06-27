@@ -2,32 +2,37 @@
 
 @theme {
   /* Brand */
-  --color-primary:        #7c3aed;
-  --color-primary-subtle: #ede9fe;
+  --color-primary:        #c2652a;
+  --color-primary-subtle: #f3e7dc;
+  --color-tertiary:       #8c3c3c;
 
   /* Surfaces */
-  --color-background: #f8fafc;
-  --color-surface:    #ffffff;
+  --color-background: #faf5ee;
+  --color-surface:    #fffaf5;
+  --color-surface-soft: #f6efe7;
 
   /* Text */
-  --color-foreground: #0f172a;
-  --color-muted:      #64748b;
+  --color-foreground: #2f241d;
+  --color-muted:      #7a6a5c;
 
   /* Border */
-  --color-border: #e2e8f0;
+  --color-border: #d8d0c8;
 
   /* Feedback */
-  --color-error: #ef4444;
+  --color-error: #c84b44;
 
   /* Entry status */
-  --color-done:   #4ade80;
-  --color-cheat:  #facc15;
-  --color-sick:   #60a5fa;
-  --color-missed: #f87171;
+  --color-done:   #7fb38a;
+  --color-cheat:  #d9b85f;
+  --color-sick:   #8fb3c9;
+  --color-missed: #d98874;
 
   /* Radius */
   --radius-card: 1rem;
-  --radius-btn:  0.75rem;
+  --radius-btn:  0.5rem;
+
+  /* Shadow */
+  --shadow-card: 0 2px 16px rgba(58, 48, 42, 0.04);
 }
 
 *,
@@ -41,10 +46,18 @@ body {
   margin: 0;
   background-color: theme(--color-background);
   color: theme(--color-foreground);
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: Manrope, system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "EB Garamond", Georgia, serif;
+  color: theme(--color-foreground);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 #root {
