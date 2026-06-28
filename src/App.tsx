@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router'
 import ProtectedRoute from './components/ProtectedRoute'
 import BottomNav from './components/BottomNav'
+
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Record from './pages/Record'
@@ -13,13 +14,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+
         <Route element={<ProtectedRoute />}>
-          <Route element={
-            <>
-              <Outlet />
-              <BottomNav />
-            </>
-          }>
+          <Route
+        element={
+  <div className="relative min-h-screen">
+    {/* Logo */}
+    <img
+      src="/DieMacherLogo.png"
+      alt="Logo"
+      className="absolute top-17 right-4 h-18 w-auto"
+    />
+
+    {/* Content */}
+    <main className="pt-16 pb-20">
+      <Outlet />
+    </main>
+
+    <BottomNav />
+  </div>
+}
+          >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/record" element={<Record />} />
