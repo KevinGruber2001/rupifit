@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import { useParticipants } from '../hooks/useParticipants'
 import { useAllEntries } from '../hooks/useAllEntries'
 import type { EntryStatus } from '../lib/types'
@@ -21,10 +22,12 @@ const STATUS_LABEL: Record<EntryStatus, string> = {
 export default function Overview() {
   const { data: participants, isLoading: loadingP } = useParticipants()
   const { data: entries, isLoading: loadingE } = useAllEntries(currentMonth)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const [year, monthNum] = currentMonth.split('-').map(Number)
   const daysInMonth = new Date(year, monthNum, 0).getDate()
   const today = new Date().toISOString().slice(0, 10)
+  const todayDay = new Date().getDate()
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
   const statusMap: Record<string, Record<number, EntryStatus>> = {}
@@ -35,6 +38,19 @@ export default function Overview() {
   })
 
   const isLoading = loadingP || loadingE
+
+  // Each cell is w-8 (32px) + gap-1 (4px) = 36px per column
+  const CELL_WIDTH = 36
+
+  useEffect(() => {
+    if (!scrollRef.current) return
+    const container = scrollRef.current
+    const containerWidth = container.clientWidth
+    // We want today at second-to-last position, so one column (today+1) is still visible to the right
+    // scrollLeft = (todayDay - 1) * CELL_WIDTH - (containerWidth - 2 * CELL_WIDTH)
+    const targetScroll = (todayDay - 1) * CELL_WIDTH - (containerWidth - 2 * CELL_WIDTH)
+    container.scrollLeft = Math.max(0, targetScroll)
+  }, [todayDay, isLoading])
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -69,13 +85,9 @@ export default function Overview() {
         <div className="flex">
           {/* ── Names column ── */}
           <div className="shrink-0 pl-4 border-r border-border">
-            {/* spacer for day-number header */}
             <div className="h-7 mb-1" />
             {participants?.map((p) => (
-              <div
-                key={p.id}
-                className="h-8 mb-1 flex items-center pr-3"
-              >
+              <div key={p.id} className="h-8 mb-1 flex items-center pr-3">
                 <span className="text-xs font-medium text-foreground" style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {p.name}
                 </span>
@@ -84,7 +96,7 @@ export default function Overview() {
           </div>
 
           {/* ── Scrollable days ── */}
-          <div className="overflow-x-auto no-scrollbar flex-1 px-2">
+          <div ref={scrollRef} className="overflow-x-auto flex-1 px-2">
             {/* Day number header */}
             <div className="flex gap-1 mb-1">
               {days.map((d) => {
