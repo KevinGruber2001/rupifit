@@ -31,6 +31,16 @@ function calcStreak(statusMap: Record<number, EntryStatus>, todayDay: number): n
   return streak
 }
 
+function calcMonthlyDone(statusMap: Record<number, EntryStatus>): number {
+  return Object.values(statusMap).filter((s) => s === 'done').length
+}
+
+const RANK_STYLES: Record<number, { label: string; className: string }> = {
+  0: { label: '🥇', className: 'text-yellow-500' },
+  1: { label: '🥈', className: 'text-slate-400' },
+  2: { label: '🥉', className: 'text-amber-600' },
+}
+
 export default function Overview() {
   const { data: participants, isLoading: loadingP } = useParticipants()
   const { data: entries, isLoading: loadingE } = useAllEntries(currentMonth)
@@ -61,13 +71,25 @@ export default function Overview() {
     container.scrollLeft = Math.max(0, targetScroll)
   }, [todayDay, isLoading])
 
+  const leaderboard = participants
+    ? [...participants]
+        .map((p) => ({
+          ...p,
+          count: calcMonthlyDone(statusMap[p.id] ?? {}),
+        }))
+        .sort((a, b) => b.count - a.count)
+    : []
+
+  const monthLabel = new Date(year, monthNum - 1).toLocaleString('default', {
+    month: 'long',
+    year: 'numeric',
+  })
+
   return (
     <div className="min-h-screen bg-background pb-28">
       <header className="px-4 py-5">
         <h1 className="text-2xl font-bold text-foreground">Overview</h1>
-        <p className="text-sm text-muted mt-0.5">
-          {new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </p>
+        <p className="text-sm text-muted mt-0.5">{monthLabel}</p>
       </header>
 
       {/* Legend */}
@@ -91,83 +113,129 @@ export default function Overview() {
           ))}
         </div>
       ) : (
-        <div className="flex">
-          {/* ── Names column ── */}
-          <div className="shrink-0 pl-4 border-r border-border">
-            <div className="h-7 mb-1" />
-            {participants?.map((p) => (
-              <div key={p.id} className="h-8 mb-1 flex items-center pr-3">
-                <span className="text-xs font-medium text-foreground" style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {p.name}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* ── Streak column ── */}
-          <div className="shrink-0 border-r border-border">
-            <div className="h-7 mb-1" />
-            {participants?.map((p) => {
-              const streak = calcStreak(statusMap[p.id] ?? {}, todayDay)
-              return (
-                <div key={p.id} className="h-8 mb-1 flex items-center px-2.5">
-                  {streak > 0 ? (
-                    <span className="text-xs font-semibold text-foreground whitespace-nowrap">
-                      {streak}x 🔥
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted">—</span>
-                  )}
+        <>
+          {/* ── Calendar grid ── */}
+          <div className="flex">
+            {/* Names column */}
+            <div className="shrink-0 pl-4 border-r border-border">
+              <div className="h-7 mb-1" />
+              {participants?.map((p) => (
+                <div key={p.id} className="h-8 mb-1 flex items-center pr-3">
+                  <span className="text-xs font-medium text-foreground" style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {p.name}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
 
-          {/* ── Scrollable days ── */}
-          <div ref={scrollRef} className="overflow-x-auto flex-1 px-2">
-            {/* Day number header */}
-            <div className="flex gap-1 mb-1">
-              {days.map((d) => {
-                const dateStr = `${currentMonth}-${String(d).padStart(2, '0')}`
-                const isToday = dateStr === today
+            {/* Streak column */}
+            <div className="shrink-0 border-r border-border">
+              <div className="h-7 mb-1" />
+              {participants?.map((p) => {
+                const streak = calcStreak(statusMap[p.id] ?? {}, todayDay)
                 return (
-                  <div
-                    key={d}
-                    className={`w-8 h-7 shrink-0 flex items-center justify-center text-[11px] font-semibold ${isToday ? 'text-primary' : 'text-muted'}`}
-                  >
-                    {d}
+                  <div key={p.id} className="h-8 mb-1 flex items-center px-2.5">
+                    {streak > 0 ? (
+                      <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                        {streak}x 🔥
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted">—</span>
+                    )}
                   </div>
                 )
               })}
             </div>
 
-            {/* Rows */}
-            {participants?.map((p) => (
-              <div key={p.id} className="flex gap-1 mb-1">
+            {/* Scrollable days */}
+            <div ref={scrollRef} className="overflow-x-auto flex-1 px-2">
+              <div className="flex gap-1 mb-1">
                 {days.map((d) => {
                   const dateStr = `${currentMonth}-${String(d).padStart(2, '0')}`
-                  const status = statusMap[p.id]?.[d]
-                  const isFuture = dateStr > today
                   const isToday = dateStr === today
-
-                  const bgClass = status
-                    ? STATUS_BG[status]
-                    : isFuture
-                    ? 'bg-surface border border-border'
-                    : 'bg-border/60'
-
                   return (
                     <div
                       key={d}
-                      className={`w-8 h-8 shrink-0 rounded-md ${bgClass} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-                      title={status ? STATUS_LABEL[status] : ''}
-                    />
+                      className={`w-8 h-7 shrink-0 flex items-center justify-center text-[11px] font-semibold ${isToday ? 'text-primary' : 'text-muted'}`}
+                    >
+                      {d}
+                    </div>
                   )
                 })}
               </div>
-            ))}
+
+              {participants?.map((p) => (
+                <div key={p.id} className="flex gap-1 mb-1">
+                  {days.map((d) => {
+                    const dateStr = `${currentMonth}-${String(d).padStart(2, '0')}`
+                    const status = statusMap[p.id]?.[d]
+                    const isFuture = dateStr > today
+                    const isToday = dateStr === today
+
+                    const bgClass = status
+                      ? STATUS_BG[status]
+                      : isFuture
+                      ? 'bg-surface border border-border'
+                      : 'bg-border/60'
+
+                    return (
+                      <div
+                        key={d}
+                        className={`w-8 h-8 shrink-0 rounded-md ${bgClass} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                        title={status ? STATUS_LABEL[status] : ''}
+                      />
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* ── Leaderboard ── */}
+          <div className="px-4 mt-8">
+            <h2 className="text-base font-bold text-foreground mb-1">Leaderboard</h2>
+            <p className="text-xs text-muted mb-4">{monthLabel}</p>
+
+            <div className="flex flex-col gap-2">
+              {leaderboard.map((p, i) => {
+                const rank = RANK_STYLES[i]
+                const topCount = leaderboard[0]?.count ?? 1
+                const barWidth = topCount > 0 ? (p.count / topCount) * 100 : 0
+
+                return (
+                  <div key={p.id} className="flex items-center gap-3">
+                    {/* Rank */}
+                    <div className="w-6 flex justify-center shrink-0">
+                      {rank ? (
+                        <span className={`text-base ${rank.className}`}>{rank.label}</span>
+                      ) : (
+                        <span className="text-xs text-muted font-medium">{i + 1}</span>
+                      )}
+                    </div>
+
+                    {/* Name */}
+                    <span className="text-xs font-medium text-foreground shrink-0" style={{ width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {p.name}
+                    </span>
+
+                    {/* Bar */}
+                    <div className="flex-1 h-5 bg-border/40 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-done rounded-full transition-all duration-500"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+
+                    {/* Count */}
+                    <span className="text-xs font-semibold text-foreground shrink-0 w-8 text-right">
+                      {p.count}x
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
