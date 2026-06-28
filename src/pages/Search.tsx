@@ -19,6 +19,18 @@ const STATUS_LABEL: Record<EntryStatus, string> = {
   missed: 'Missed',
 }
 
+function calcStreak(statusMap: Record<number, EntryStatus>, todayDay: number): number {
+  let streak = 0
+  for (let d = todayDay; d >= 1; d--) {
+    if (statusMap[d] === 'done') {
+      streak++
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
 export default function Overview() {
   const { data: participants, isLoading: loadingP } = useParticipants()
   const { data: entries, isLoading: loadingE } = useAllEntries(currentMonth)
@@ -39,15 +51,12 @@ export default function Overview() {
 
   const isLoading = loadingP || loadingE
 
-  // Each cell is w-8 (32px) + gap-1 (4px) = 36px per column
   const CELL_WIDTH = 36
 
   useEffect(() => {
     if (!scrollRef.current) return
     const container = scrollRef.current
     const containerWidth = container.clientWidth
-    // We want today at second-to-last position, so one column (today+1) is still visible to the right
-    // scrollLeft = (todayDay - 1) * CELL_WIDTH - (containerWidth - 2 * CELL_WIDTH)
     const targetScroll = (todayDay - 1) * CELL_WIDTH - (containerWidth - 2 * CELL_WIDTH)
     container.scrollLeft = Math.max(0, targetScroll)
   }, [todayDay, isLoading])
@@ -93,6 +102,25 @@ export default function Overview() {
                 </span>
               </div>
             ))}
+          </div>
+
+          {/* ── Streak column ── */}
+          <div className="shrink-0 border-r border-border">
+            <div className="h-7 mb-1" />
+            {participants?.map((p) => {
+              const streak = calcStreak(statusMap[p.id] ?? {}, todayDay)
+              return (
+                <div key={p.id} className="h-8 mb-1 flex items-center px-2.5">
+                  {streak > 0 ? (
+                    <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                      {streak}x 🔥
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted">—</span>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           {/* ── Scrollable days ── */}
