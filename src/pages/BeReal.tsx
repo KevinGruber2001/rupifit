@@ -3,6 +3,9 @@ import { Link } from 'react-router'
 import { useSession } from '../context/SessionContext'
 import { useParticipants } from '../hooks/useParticipants'
 import { useTodayEntries } from '../hooks/useTodayEntries'
+import { useLocalEngagement } from '../hooks/useLocalEngagement'
+import LikeButton from '../components/LikeButton'
+import CommentSection from '../components/CommentSection'
 import type { DailyEntry, EntryStatus } from '../lib/types'
 
 const STATUS_CONFIG: Record<EntryStatus, { label: string; bg: string; dot: string }> = {
@@ -20,10 +23,20 @@ function EntryCard({
   entry,
   name,
   blurred,
+  liked,
+  likeCount,
+  onToggleLike,
+  comments,
+  onAddComment,
 }: {
   entry: DailyEntry
   name: string
   blurred: boolean
+  liked: boolean
+  likeCount: number
+  onToggleLike: () => void
+  comments: { id: string; name: string; body: string }[]
+  onAddComment: (body: string) => void
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   const cfg = STATUS_CONFIG[entry.status]
@@ -85,6 +98,14 @@ function EntryCard({
           </div>
         </div>
       )}
+
+      {/* Like + comment row — only when unblurred */}
+      {!blurred && (
+        <div className="bg-white pt-2 pb-1">
+          <LikeButton liked={liked} count={likeCount} onToggle={onToggleLike} />
+          <CommentSection comments={comments} onAdd={onAddComment} />
+        </div>
+      )}
     </div>
   )
 }
@@ -93,6 +114,7 @@ export default function BeReal() {
   const { session } = useSession()
   const { data: participants, isLoading: loadingP } = useParticipants()
   const { data: entries, isLoading: loadingE } = useTodayEntries()
+  const { likes, comments, toggleLike, addComment } = useLocalEngagement()
 
   const today = new Date().toISOString().slice(0, 10)
   const todayLabel = new Date(today + 'T00:00:00').toLocaleDateString('default', {
@@ -103,18 +125,20 @@ export default function BeReal() {
     (participants ?? []).map((p) => [p.id, p]),
   )
 
+  const myId = session?.user?.id
+
   // Only show entries with an active status (not missed)
   const activeEntries = (entries ?? []).filter((e) =>
     ['done', 'cheat', 'sick'].includes(e.status),
   )
 
-  const myEntry = activeEntries.find((e) => e.participant_id === session?.user?.id)
+  const myEntry = activeEntries.find((e) => e.participant_id === myId)
   const hasPosted = !!myEntry
 
   // My entry first, then others sorted by created_at
   const sorted = [
-    ...activeEntries.filter((e) => e.participant_id === session?.user?.id),
-    ...activeEntries.filter((e) => e.participant_id !== session?.user?.id),
+    ...activeEntries.filter((e) => e.participant_id === myId),
+    ...activeEntries.filter((e) => e.participant_id !== myId),
   ]
 
   const isLoading = loadingP || loadingE
@@ -157,13 +181,23 @@ export default function BeReal() {
         <div className="px-4 flex flex-col gap-4">
           {sorted.map((entry) => {
             const participant = participantMap[entry.participant_id]
-            const isMe = entry.participant_id === session?.user?.id
+            const isMe = entry.participant_id === myId
+            const entryLikes = likes[entry.id] ?? []
+            const entryComments = comments[entry.id] ?? []
+
             return (
               <EntryCard
                 key={entry.id}
                 entry={entry}
                 name={participant?.name ?? 'Unknown'}
                 blurred={!hasPosted && !isMe}
+                liked={!!myId && entryLikes.includes(myId)}
+                likeCount={entryLikes.length}
+                onToggleLike={() => myId && toggleLike(entry.id, myId)}
+                comments={entryComments}
+                onAddComment={(body) =>
+                  myId && addComment(entry.id, myId, participant?.name ?? 'You', body)
+                }
               />
             )
           })}
